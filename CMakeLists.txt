@@ -14,11 +14,13 @@ project(msdf-atlas-gen VERSION 1.2 LANGUAGES CXX)
 
 find_package(Threads REQUIRED)
 
-if(MSDF_ATLAS_GEN_MSDFGEN_EXTERNAL)
-    find_package(msdfgen REQUIRED)
-else()
-    add_subdirectory(msdfgen)
-endif()
+#if(MSDF_ATLAS_GEN_MSDFGEN_EXTERNAL)
+#    find_package(msdfgen REQUIRED)
+#else()
+#    add_subdirectory(msdfgen)
+#endif()
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 file(GLOB_RECURSE MSDF_ATLAS_GEN_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "msdf-atlas-gen/*.h" "msdf-atlas-gen/*.hpp")
 file(GLOB_RECURSE MSDF_ATLAS_GEN_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "msdf-atlas-gen/*.cpp")
@@ -31,7 +33,7 @@ target_include_directories(msdf-atlas-gen
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/msdfgen/include # for lodepng.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include # for lodepng.h
         ${CMAKE_CURRENT_SOURCE_DIR}/artery-font-format
 )
 
@@ -57,3 +59,30 @@ if(MSDF_ATLAS_GEN_BUILD_STANDALONE)
     target_link_libraries(msdf-atlas-gen-standalone PUBLIC msdf-atlas-gen::msdf-atlas-gen)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT msdf-atlas-gen-standalone)
 endif()
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
+install(TARGETS msdf-atlas-gen EXPORT msdf-atlas-genTargets
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	FRAMEWORK DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/msdf-atlas-gen)
+install(EXPORT msdf-atlas-genTargets DESTINATION lib/cmake/msdf-atlas-gen)
+
+configure_package_config_file(
+	cmake/msdf-atlas-genConfig.cmake.in
+	lib/cmake/msdf-atlas-gen/msdf-atlas-genConfig.cmake
+	INSTALL_DESTINATION lib/cmake/msdf-atlas-gen
+	NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
+
+configure_file(
+    cmake/msdf-atlas-genConfig.cmake.in
+    cmake/msdf-atlas-genConfig.cmake
+    @ONLY
+)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/msdf-atlas-genConfig.cmake" DESTINATION lib/cmake/msdf-atlas-gen)
+#export()
