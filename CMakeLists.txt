@@ -2,13 +2,10 @@
 cmake_minimum_required(VERSION 3.15)
 
 option(MSDF_ATLAS_GEN_BUILD_STANDALONE "Build the msdf-atlas-gen standalone executable" ON)
-option(MSDF_ATLAS_GEN_MSDFGEN_EXTERNAL "Do not build the msdfgen submodule but find it as an external package" OFF)
-if(NOT MSDF_ATLAS_GEN_MSDFGEN_EXTERNAL)
-    set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "Build the msdfgen standalone executable")
-    set(MSDFGEN_USE_OPENMP OFF CACHE INTERNAL "Build with OpenMP support for multithreaded code (disabled for atlas gen)" FORCE)
-    set(MSDFGEN_USE_CPP11 ON CACHE INTERNAL "Build with C++11 enabled (always enabled for atlas gen)" FORCE)
-    set(MSDFGEN_INSTALL OFF CACHE BOOL "Generate installation target for msdfgen")
-endif()
+set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "Build the msdfgen standalone executable")
+set(MSDFGEN_USE_OPENMP OFF CACHE INTERNAL "Build with OpenMP support for multithreaded code (disabled for atlas gen)" FORCE)
+set(MSDFGEN_USE_CPP11 ON CACHE INTERNAL "Build with C++11 enabled (always enabled for atlas gen)" FORCE)
+set(MSDFGEN_INSTALL OFF CACHE BOOL "Generate installation target for msdfgen")
 
 project(msdf-atlas-gen VERSION 1.2 LANGUAGES CXX)
 
@@ -17,10 +14,10 @@ find_package(Threads REQUIRED)
 #if(MSDF_ATLAS_GEN_MSDFGEN_EXTERNAL)
 #    find_package(msdfgen REQUIRED)
 #else()
-#    add_subdirectory(msdfgen)
+add_subdirectory(msdfgen)
 #endif()
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+#set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 file(GLOB_RECURSE MSDF_ATLAS_GEN_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "msdf-atlas-gen/*.h" "msdf-atlas-gen/*.hpp")
 file(GLOB_RECURSE MSDF_ATLAS_GEN_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "msdf-atlas-gen/*.cpp")
@@ -33,7 +30,7 @@ target_include_directories(msdf-atlas-gen
     INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/include # for lodepng.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/msdfgen/include # for lodepng.h
         ${CMAKE_CURRENT_SOURCE_DIR}/artery-font-format
 )
 
@@ -60,7 +57,7 @@ if(MSDF_ATLAS_GEN_BUILD_STANDALONE)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT msdf-atlas-gen-standalone)
 endif()
 
-include(GNUInstallDirs)
+#[[include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 install(TARGETS msdf-atlas-gen EXPORT msdf-atlas-genTargets
@@ -84,5 +81,5 @@ configure_file(
     @ONLY
 )
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/msdf-atlas-genConfig.cmake" DESTINATION lib/cmake/msdf-atlas-gen)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/msdf-atlas-genConfig.cmake" DESTINATION lib/cmake/msdf-atlas-gen)]]
 #export()
